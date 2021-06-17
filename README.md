@@ -10,5 +10,5 @@ However, my testing to date is only Android and iOS.
 
 ![Example screen](images/example.png)
 
-##Disclaimer
+## Disclaimer
 This is offered entirely for demonstration & experimentation purposes only, and should not under any circumstances be used for navigation. It is not intended to be substitute or replacement any such system.
