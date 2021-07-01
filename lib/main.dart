@@ -4,23 +4,44 @@ import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:nmea/nmea.dart';
 import 'package:intl/intl.dart';
 
-void main() {
-  runApp(JMarineShell());
+import 'commsSettings.dart';
+
+void main() async {
+  runApp(MaterialApp(
+  title: 'JMarine',
+  theme: ThemeData.dark(),
+  home:JMarineShell()));
 }
 
 class JMarineShell extends StatelessWidget {
+
   @override Widget build(BuildContext context) {
-    return MaterialApp(
-        title: 'JMarine',
-        theme: ThemeData.dark(),
-        home: Scaffold(
+
+    return Scaffold(
           appBar: AppBar(
             title: Text("JMarine"),
 
           ),
+            drawer: Drawer(
+                child: ListView(children: <Widget>[
+                  ListTile(
+                      title: Text('Communications'),
+                      onTap: () async {
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (BuildContext context) => CommsSettings('JMarine'))
+                        ).then((var s) {
+                          _nmea.hostname = s.host;
+                          _nmea.port = s.port;
+                        });
+                      }),
+
+                ])),
           body: JMarine(),
 
-        )
+
     );
   }
 }
@@ -61,15 +82,19 @@ _TwoLineItemState
   _time,
   _btwdtw;
 
+NMEASocketReader _nmea;
+
 class _JMarineState extends State<JMarine> {
   WindGauge wind = WindGauge();
-  NMEASocketReader _nmea;
+
 
   @override initState() {
     super.initState();
 
-    _nmea = NMEASocketReader('www.dealingtechnology.com', 10110);
-    _nmea.process(_handleNMEA);
+    if (_nmea == null) {
+      _nmea = NMEASocketReader('www.dealingtechnology.com', 10110);
+      _nmea.process(_handleNMEA);
+    }
   }
 
   void _handleNMEA(var msg) {
@@ -155,7 +180,7 @@ class _JMarineState extends State<JMarine> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [ tws, wpt, time, sog])),
-        wind,
+        Expanded(flex: 2, child: wind),
         Expanded(child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,

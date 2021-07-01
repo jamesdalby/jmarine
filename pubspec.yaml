@@ -24,6 +24,7 @@ dependencies:
   flutter:
     sdk: flutter
   syncfusion_flutter_gauges:
+  shared_preferences:
   nmea:
     git:
       url: https://github.com/jamesdalby/nmea.git
