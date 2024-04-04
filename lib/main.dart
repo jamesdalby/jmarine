@@ -68,6 +68,19 @@ class JMarine extends StatefulWidget {
 
 // These globals hold the (real) state. They're updated by NMEAHandler,
 // and references in the State<> objects.
+
+OneLineItem tws = OneLineItem(() => _tws = _OneLineItemState('TWS', _1dp, _kts));
+OneLineItem sog = OneLineItem(() => _sog = _OneLineItemState('SOG', _1dp, _kts));
+OneLineItem aws = OneLineItem(() =>_aws = _OneLineItemState('AWS', _1dp, _kts));
+// OneLineItem awd = OneLineItem(() => _awd = _OneLineItemState('AWD', _deg0, _true));
+
+OneLineItem twd = OneLineItem(() => _twd = _OneLineItemState('TWD', _deg0, _true));
+// OneLineItem awa = OneLineItem(() => _awa = _OneLineItemState('AWA', _deg0, _true));
+OneLineItem twa = OneLineItem(() => _twa = _OneLineItemState('TWA', _deg180, _ps));
+OneLineItem cog = OneLineItem(() => _cog = _OneLineItemState('COG', _deg0, _true));
+TwoLineItem time = TwoLineItem(() => _time = _TwoLineItemState("Time & Date", (v) => v == null ? "--:--:--" : _hms.format(v), null, (v)=>v==null?'':_dmy.format(v), null));
+TwoLineItem wpt = TwoLineItem(() => _btwdtw = _TwoLineItemState("BTW & DTW",  _deg0, (v) => "T", _1dp, _nm));
+
 _OneLineItemState
     _tws,
     _sog,
@@ -103,21 +116,29 @@ class _JMarineState extends State<JMarine> {
       _time.setState(() => _time.value = [ msg.utc, msg.utc ]);
     }
     if (msg is MWD) {
-      _twd.setState(() => _twd.value = msg.trueWindDirection);
-      _tws.setState(() => _tws.value = msg.trueWindSpeedKnots);
-
+      if (msg.trueWindDirection != null) {
+        _twd.setState(() => _twd.value = msg.trueWindDirection!);
+      }
+      if (msg.trueWindSpeedKnots != null) {
+        _tws.setState(() => _tws.value = msg.trueWindSpeedKnots!);
+      }
     }
     if (msg is MWV) {
       // _awa.setState(() => _awa.value = msg.windAngle);
 
       if (msg.isTrue) {
-        _tws.setState(() => _tws.value = msg.windSpeed);
-        _twa.setState(() => _twa.value = msg.windAngle);
-
-        _windGaugeState.setState(() => _windGaugeState.twa = msg.windAngle);
+        if (msg.windSpeed != null) _tws.setState(() => _tws.value = msg.windSpeed!);
+        if (msg.windAngle != null) {
+          _twa.setState(() => _twa.value = msg.windAngle!);
+          _windGaugeState.setState(() => _windGaugeState.twa = msg.windAngle!);
+        }
       } else {
-        _aws.setState(() => _aws.value = msg.windSpeed);
-        _windGaugeState.setState(() => _windGaugeState.awa = msg.windAngle);
+        if (msg.windAngle != null) {
+          _aws.setState(() => _aws.value = msg.windSpeed!);
+        }
+        if (msg.windAngle != null) {
+          _windGaugeState.setState(() => _windGaugeState.awa = msg.windAngle!);
+        }
       }
     }
     if (msg is VTG) {
@@ -127,17 +148,7 @@ class _JMarineState extends State<JMarine> {
 
   @override
   Widget build(BuildContext context) {
-    OneLineItem tws = OneLineItem(() => _tws = _OneLineItemState('TWS', _1dp, _kts));
-    OneLineItem sog = OneLineItem(() => _sog = _OneLineItemState('SOG', _1dp, _kts));
-    OneLineItem aws = OneLineItem(() =>_aws = _OneLineItemState('AWS', _1dp, _kts));
-    // OneLineItem awd = OneLineItem(() => _awd = _OneLineItemState('AWD', _deg0, _true));
 
-    OneLineItem twd = OneLineItem(() => _twd = _OneLineItemState('TWD', _deg0, _true));
-    // OneLineItem awa = OneLineItem(() => _awa = _OneLineItemState('AWA', _deg0, _true));
-    OneLineItem twa = OneLineItem(() => _twa = _OneLineItemState('TWA', _deg180, _ps));
-    OneLineItem cog = OneLineItem(() => _cog = _OneLineItemState('COG', _deg0, _true));
-    TwoLineItem time = TwoLineItem(() => _time = _TwoLineItemState("Time & Date", (v) => v == null ? "--:--:--" : _hms.format(v), null, (v)=>v==null?'':_dmy.format(v), null));
-    TwoLineItem wpt = TwoLineItem(() => _btwdtw = _TwoLineItemState("BTW & DTW",  _deg0, (v) => "T", _1dp, _nm));
 
     if (MediaQuery.of(context).orientation == Orientation.portrait){
       return Column(
@@ -203,7 +214,7 @@ class _WindGaugeState extends State<WindGauge> {
   double twa = 0;
 
   @override Widget build(BuildContext context) {
-    double fs = Theme.of(context).textTheme.headline5.fontSize;
+    double fs = Theme.of(context).textTheme.headlineSmall?.fontSize??10;
     var smallgrey = TextStyle(fontSize: fs/2, color: Colors.grey);
     return SfRadialGauge(
 
@@ -369,9 +380,9 @@ class _TwoLineItemState extends State<TwoLineItem> {
 
   final String label;
   final String Function(dynamic v) fmtMainTop;
-  final String Function(dynamic v) fmtSuffixTop;
+  final String Function(dynamic v)? fmtSuffixTop;
   final String Function(dynamic v) fmtMainBottom;
-  final String Function(dynamic v) fmtSuffixBottom;
+  final String Function(dynamic v)? fmtSuffixBottom;
 
 
   var vtop, vbottom;
@@ -383,9 +394,9 @@ class _TwoLineItemState extends State<TwoLineItem> {
 
   @override
   Widget build(BuildContext context) {
-    TextStyle th = Theme.of(context).textTheme.headline5;
-    TextStyle white = th.apply(color: Colors.white, fontWeightDelta: -2);
-    TextStyle smallgrey = th.apply(color: Colors.grey, fontSizeFactor: 0.5);
+    TextStyle? th = Theme.of(context).textTheme.headline5;
+    TextStyle? white = th?.apply(color: Colors.white, fontWeightDelta: -2);
+    TextStyle? smallgrey = th?.apply(color: Colors.grey, fontSizeFactor: 0.5);
 
 
     return Column(
