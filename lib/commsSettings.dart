@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,7 +14,7 @@ class _CommsSettingsState extends State<CommsSettings> {
   final TextEditingController _hc = TextEditingController(text: 'www.dealingtechnology.com');
   final TextEditingController _pc = TextEditingController(text: '10110');
 
-  Future<SharedPreferences> _prefs; // NMEA default port
+  late Future<SharedPreferences> _prefs; // NMEA default port
 
   _CommsSettingsState();
 
@@ -39,9 +39,9 @@ class _CommsSettingsState extends State<CommsSettings> {
           key: _formKey,
           child: FutureBuilder(
               future: _prefs,
-              builder: (context, prefs) {
-                _hc.text = prefs.data.get("${widget._prefix}.host")??"www.jmarine.org";
-                _pc.text = prefs.data.get("${widget._prefix}.port").toString()??"10110";
+              builder: (context, AsyncSnapshot<SharedPreferences> prefs) {
+                _hc.text = prefs.data?.get("${widget._prefix}.host")?.toString()??"www.dealingtechnology.com";
+                _pc.text = prefs.data?.get("${widget._prefix}.port")?.toString()??"10110";
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -52,7 +52,7 @@ class _CommsSettingsState extends State<CommsSettings> {
                           hintText: 'Hostname'
                       ),
                       validator: (value) {
-                        if (value.isEmpty) {
+                        if (value?.isEmpty??false) {
                           return 'Please enter some text';
                         }
                         return null;
@@ -66,7 +66,7 @@ class _CommsSettingsState extends State<CommsSettings> {
                       ),
                       validator: (value) {
                         try {
-                          if (int.parse(value) > 0) {
+                          if (value != null && int.parse(value) > 0) {
                             return null;
                           }
                         } catch (err) {}
@@ -76,11 +76,11 @@ class _CommsSettingsState extends State<CommsSettings> {
 
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: RaisedButton(
+                      child: ElevatedButton(
                         onPressed: () {
-                          if (_formKey.currentState.validate() == true) {
-                            prefs.data.setString("${widget._prefix}.host", host);
-                            prefs.data.setInt("${widget._prefix}.port", port);
+                          if (_formKey.currentState?.validate() == true) {
+                            prefs.data?.setString("${widget._prefix}.host", host);
+                            prefs.data?.setInt("${widget._prefix}.port", port);
                             Navigator.of(context).pop(this);
                           }
                         },
